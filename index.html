@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Géolocalisation</title>
+</head>
+<body>
+    <h1>Obtenez votre position actuelle</h1>
+    <button onclick="getLocation()">Obtenir la position</button>
+    <p id="location"></p>
+
+    <script>
+        var latitude; // Variable pour stocker la latitude
+        var longitude; // Variable pour stocker la longitude
+
+        function getLocation() {
+            if (navigator.geolocation) {
+                navigator.geolocation.getCurrentPosition(showPosition, showError);
+            } else {
+                document.getElementById("location").innerHTML = "La géolocalisation n'est pas supportée par ce navigateur.";
+            }
+        }
+
+        function showPosition(position) {
+            latitude = position.coords.latitude; // Stocker la latitude dans la variable
+            longitude = position.coords.longitude; // Stocker la longitude dans la variable
+
+            document.getElementById("location").innerHTML = "Latitude: " + latitude + "<br>Longitude: " + longitude;
+            sendPositionToServer(latitude, longitude);
+        }
+
+        function showError(error) {
+            switch (error.code) {
+                case error.PERMISSION_DENIED:
+                    document.getElementById("location").innerHTML = "Utilisateur a refusé la demande de géolocalisation."
+                    break;
+                case error.POSITION_UNAVAILABLE:
+                    document.getElementById("location").innerHTML = "Les informations de localisation ne sont pas disponibles."
+                    break;
+                case error.TIMEOUT:
+                    document.getElementById("location").innerHTML = "La demande de localisation a expiré."
+                    break;
+                case error.UNKNOWN_ERROR:
+                    document.getElementById("location").innerHTML = "Une erreur inconnue s'est produite."
+                    break;
+            }
+        }
+
+        function sendPositionToServer(lat, lon) {
+            fetch('/save_location', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ latitude: lat, longitude: lon }),
+            })
+            .then(response => response.json())
+            .then(data => {
+                console.log('Succès:', data);
+            })
+            .catch((error) => {
+                console.error('Erreur:', error);
+            });
+        }
+    </script>
+</body>
+</html>
